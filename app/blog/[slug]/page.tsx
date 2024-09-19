@@ -60,6 +60,8 @@ export default function Blog({ params }) {
 
   return (
     <section>
+      {/* JSON-LD: 일종의 포맷이며 검색 엔진이 좀 더 이해하기 쉽도록 엔진 최적화에 필요한 요소 */}
+      {/* 사용법: 레이아웃이나 Page 파일에 <script> 태그를 첨부하여 데이터를 밀어넣는 방식 */}
       <script
         type="application/ld+json"
         suppressHydrationWarning

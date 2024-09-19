@@ -1,6 +1,7 @@
 import { baseUrl } from 'app/sitemap'
 import { getBlogPosts } from 'app/blog/utils'
 
+// RSS: Rich Site Summary 또는 Really Simple Syndication
 export async function GET() {
   let allBlogs = await getBlogPosts()
 

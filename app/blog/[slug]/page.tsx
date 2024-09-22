@@ -51,8 +51,25 @@ export function generateMetadata({ params }) {
   }
 }
 
-export default function Blog({ params }) {
+export async function getViewsCount(): Promise<
+  { slug: string; count: number }[]
+> {
+  // if (!process.env.POSTGRES_URL) {
+  //   return []
+  // }
+
+  return [{ slug: 'vim', count: 10000 }]
+
+  // return sql`
+  //   SELECT slug, count FROM views
+  //   `
+}
+
+export default async function Blog({ params }) {
   let post = getBlogPosts().find((post) => post.slug === params.slug)
+
+  const views = await getViewsCount()
+  const count = views.find((view) => view.slug === params.slug)?.count || 0
 
   if (!post) {
     notFound()
@@ -90,6 +107,10 @@ export default function Blog({ params }) {
       <div className="flex justify-between items-center mt-2 mb-8 text-sm">
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
           {formatDate(post.metadata.publishedAt)}
+        </p>
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          {/* 조회 수 영역 */}
+          {count.toLocaleString()} views
         </p>
       </div>
       <article className="prose">

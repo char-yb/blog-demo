@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { CustomMDX } from 'app/components/mdx'
 import { formatDate, getBlogPosts } from 'app/blog/utils'
 import { baseUrl } from 'app/sitemap'
+import { sql } from '@vercel/postgres'
 
 export async function generateStaticParams() {
   let posts = getBlogPosts()
@@ -54,19 +55,35 @@ export function generateMetadata({ params }) {
 export async function getViewsCount(): Promise<
   { slug: string; count: number }[]
 > {
-  // if (!process.env.POSTGRES_URL) {
-  //   return []
-  // }
+  'use server' // 이 코드는 서버에서만 실행됩니다.
+  if (!process.env.POSTGRES_URL) {
+    return []
+  }
 
-  return [{ slug: 'vim', count: 10000 }]
+  const { rows } = await sql`
+    SELECT slug, count 
+    FROM views
+  `
+  return rows.map((row) => ({
+    slug: row.slug,
+    count: row.count,
+  }))
+}
 
-  // return sql`
-  //   SELECT slug, count FROM views
-  //   `
+const incrementView = async (slug: string) => {
+  'use server' // 이 코드는 서버에서만 실행됩니다.
+
+  await sql`
+    INSERT INTO views (slug, count)
+    VALUES (${slug}, 1)
+    ON CONFLICT (slug)
+    DO UPDATE SET count = views.count + 1
+  `
 }
 
 export default async function Blog({ params }) {
   let post = getBlogPosts().find((post) => post.slug === params.slug)
+  await incrementView(params.slug)
 
   const views = await getViewsCount()
   const count = views.find((view) => view.slug === params.slug)?.count || 0

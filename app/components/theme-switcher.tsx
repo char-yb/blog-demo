@@ -9,22 +9,35 @@ export const ThemeSwitcher = () => {
 
   // 테마를 변경 후 새로 고침해도 변경된 테마를 유지하기 위해 마운트 된 이후 현재 테마를 확인한 다음 setItem
   useEffect(() => {
+    // 로컬 스토리지에 테마가 없는 경우
+    if (!('theme' in localStorage)) {
+      // 시스템 기본 설정을 한번 조회
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      // 시스템 기본 설정이 다크 모드인 경우
+      const nextTheme = isDark ? 'dark' : 'light'
+      applyTheme(nextTheme)
+      return
+    }
+
     const currentTheme = localStorage.getItem('theme') as Theme
-    setTheme(currentTheme)
+    applyTheme(currentTheme)
   }, [])
+
+  const applyTheme = (nextTheme: Theme) => {
+    localStorage.setItem('theme', nextTheme)
+    setTheme(nextTheme)
+    if (nextTheme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }
 
   // toggle 버튼으로 테마 변경
   const handleToggle = () => {
-    const currentTheme = localStorage.getItem('theme') as Theme
-    if (currentTheme === 'light') {
-      localStorage.setItem('theme', 'dark')
-      document.documentElement.classList.add('dark')
-      setTheme('dark')
-    } else {
-      localStorage.setItem('theme', 'light')
-      document.documentElement.classList.remove('dark')
-      setTheme('light')
-    }
+    // 상위에 있는 state를 가져와서 테마를 변경
+    const nextTheme = theme === 'light' ? 'dark' : 'light'
+    applyTheme(nextTheme)
   }
   return (
     <button onClick={handleToggle}>
